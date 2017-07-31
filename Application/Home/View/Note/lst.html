@@ -20,6 +20,13 @@
 <h1>留言列表</h1>
 <h2><a href="/index.php/Home/Note/add">添加留言</a></h2>
 
+<form>
+标题:<input name="title" type="text" value="<{$Think.get.title}>" />
+时间从:<input name="start" type="text" value="<{$Think.get.start}>" />
+到:<input name="end" type="text" value="<{$Think.get.end}>" />
+<input type="submit" value="查询" />
+</form>
+
 <div class="page"><{$show}></div>
 <table border="1" width="100%">
 	<tr><th>Id</th><th>标题</th><th>内容</th><th>添加时间</th><th>ip</th></tr>

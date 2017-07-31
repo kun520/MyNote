@@ -1,15 +1,38 @@
 <?php
+
 namespace Home\Controller;
 use Think\Controller;
 
 class NoteController extends Controller{
     //查看所有留言
     public function lst(){
+        
+        /***************搜索功能*******************/
+        $title = isset($_GET['title']) ? $_GET['title'] : '';
+        $start = isset($_GET['start']) ? $_GET['start'] : '';
+        $end= isset($_GET['end']) ? $_GET['end'] : '';
+        
+        $where = [];
+        if($title){
+            $where['title'] = ['LIKE',"%$title%"];
+        }
+        
+        if($start && $end){//如果2个时间都值就用BETWEEN AND
+            $where['addtime'] = ['BETWEEN', [$start,$end]];
+        }
+        else if($start){//>=开始时间
+            $where['addtime'] = ['EGT', $start];
+        }
+        else if($end){//<=结束始时间
+            $where['addtime'] = ['ELT', $end];
+        }
+        
+        
         /***************翻页功能*******************/
         //实例化一个表模型对象
         $note = M('Note');
-        //取出表中的总记录书
-        $count = $note->count();
+        //取出表中该搜索条件的总记录数
+        $count = $note->where($where)->count();
         $perPage = 10;
         $page = new \Think\Page($count, $perPage);
         
@@ -17,10 +40,12 @@ class NoteController extends Controller{
         $show = $page->show();
         $this->assign('show', $show);
         
-        $data = $note->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
+        /***************查询数据*******************/
+        $data = $note->where($where)->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
         
         //把数据传到页面中
         $this->assign('data', $data);
+                
         $this->display();
     }
     

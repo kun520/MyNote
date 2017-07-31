@@ -20,6 +20,13 @@
 <h1>留言列表</h1>
 <h2><a href="/index.php/Home/Note/add">添加留言</a></h2>
 
+<form>
+标题:<input name="title" type="text" value="<?php echo ($_GET['title']); ?>" />
+时间从:<input name="start" type="text" value="<?php echo ($_GET['start']); ?>" />
+到:<input name="end" type="text" value="<?php echo ($_GET['end']); ?>" />
+<input type="submit" value="查询" />
+</form>
+
 <div class="page"><?php echo ($show); ?></div>
 <table border="1" width="100%">
 	<tr><th>Id</th><th>标题</th><th>内容</th><th>添加时间</th><th>ip</th></tr>
