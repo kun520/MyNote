@@ -29,9 +29,20 @@
 
 <div class="page"><{$show}></div>
 <table border="1" width="100%">
-	<tr><th>Id</th><th>标题</th><th>内容</th><th>添加时间</th><th>ip</th></tr>
+	<tr>
+		<th>Id</th>
+		<th>图片</th>
+		<th>标题</th>
+		<th>内容</th>
+		<th>添加时间</th>
+		<th>ip</th></tr>
 	<foreach name="data" item="lst">
-	 	<tr><td><{$lst.id}></td><td><{$lst.title|htmlspecialchars}></td><td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td><td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td></tr>
+	 	<tr>
+	 		<td><{$lst.id}></td>
+	 		<td><img src="/Public/Uploads/<{$lst.img_path}>"></td>
+	 		<td><{$lst.title|htmlspecialchars}></td>
+	 		<td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
+	 		<td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td></tr>
 	</foreach>
 </table>
 <div class="page"><{$show}></div>

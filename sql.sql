@@ -6,6 +6,7 @@ create table s_note(
 	title varchar(100) not null comment '标题',
 	content longtext not null comment '内容',
 	addtime datetime not null /*default current_timestamp*/ comment '添加时间',
+	img_path varchar(100) not null comment '图片地址',
 	ip int not null comment 'Ip地址',
 	primary key(id)
 )engine=InnoDB default charset utf8 comment '留言表';

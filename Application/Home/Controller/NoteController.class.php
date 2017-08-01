@@ -2,8 +2,14 @@
 
 namespace Home\Controller;
 use Think\Controller;
+use Think\Upload;
 
 class NoteController extends Controller{
+    //生成验证码
+    public function captcha(){
+        $Verify = new \Think\Verify();
+        $Verify->entry();
+    }
     //查看所有留言
     public function lst(){
         
@@ -25,8 +31,7 @@ class NoteController extends Controller{
         }
         else if($end){//<=结束始时间
             $where['addtime'] = ['ELT', $end];
-        }
-        
+        }        
         
         /***************翻页功能*******************/
         //实例化一个表模型对象
@@ -57,15 +62,45 @@ class NoteController extends Controller{
     
     //添加留言 - 处理表单,插入数据
     public function doadd(){
+                
         //接受提交的数据
         $title = trim($_POST['title']);
         $content= trim($_POST['content']);
+        $captcha= trim($_POST['captcha']);
         //验证数据
+        $verify = new \Think\Verify(); 
+        if(!$verify->check($captcha)){            
+            $this->error('验证码不正确');
+        }
+        
         if(empty($title)){
             $this->error('标题不能为空');
         }
         if(empty($content)){
             $this->error('内容不能为空');
+        }
+        /********************上传图片*********************/
+        $upload = new \Think\Upload();
+        $upload->maxSize = 2*1024*1024 ;// 设置附件上传大小  单位:字节  2M
+        $upload->exts = array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
+        $upload->rootPath = './Public/Uploads/'; // 设置附件上传根目录 --> 需手动建立目录
+        $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
+        
+        //默认上传图片地址为空
+        $imgPath = '';
+        // 上传文件
+        $imgInfo= $upload->upload();
+        if($imgInfo) {
+            // 上传成功
+            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
+        }
+        else{
+            // 上传错误提示错误信息
+            $error = $upload->getError();
+            //可以不上传图片
+            if($error != "没有文件被上传！"){
+                $this->error($error);
+            }
         }
         //操作数据库
         $note = M('Note');
@@ -73,6 +108,7 @@ class NoteController extends Controller{
             'title' => $title,
             'content' => $content,
             'addtime' => date('Y-m-d H:i:s'),
+            'img_path' => $imgPath,
             'ip' => get_client_ip(1),
         );
         $id = $note->add($data);
