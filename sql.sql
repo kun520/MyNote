@@ -1,4 +1,4 @@
-CREATE DATABASE myNote default charset utf8;
+﻿CREATE DATABASE myNote default charset utf8;
 use myNote;
 
 create table s_note(
@@ -6,7 +6,10 @@ create table s_note(
 	title varchar(100) not null comment '标题',
 	content longtext not null comment '内容',
 	addtime datetime not null /*default current_timestamp*/ comment '添加时间',
-	img_path varchar(100) not null comment '图片地址',
+	img_path varchar(100) comment '图片地址',
+	img_path_big varchar(100) comment '大缩略图片地址',
+	img_path_mid varchar(100 comment '中缩略图片地址',
+	img_path_sm varchar(100) comment '小缩略图片地址',
 	ip int not null comment 'Ip地址',
 	primary key(id)
 )engine=InnoDB default charset utf8 comment '留言表';

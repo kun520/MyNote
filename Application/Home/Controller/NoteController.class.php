@@ -10,6 +10,74 @@ class NoteController extends Controller{
         $Verify = new \Think\Verify();
         $Verify->entry();
     }
+    
+    //批量删除留言
+    public function pldelete(){
+        
+        $note = M("Note");
+        foreach ( $_POST['selId'] as $id){
+            //先删除记录的图片
+            $info = $note->field("img_path,img_path_big,img_path_mid,img_path_sm")
+            ->where([
+                'id' => $id,
+            ])
+            ->find();
+            
+            if($info){
+                //如果查到记录就删除硬盘上的图片
+                unlink('./Public/Uploads/'.$info['img_path']);
+                unlink('./Public/Uploads/'.$info['img_path_big']);
+                unlink('./Public/Uploads/'.$info['img_path_mid']);
+                unlink('./Public/Uploads/'.$info['img_path_sm']);
+                
+                //在从数据库删除数据
+                $note->where([
+                    'id' => $id,
+                ])
+                ->delete();
+            }
+        }
+        //提示信息并跳转到上一个页面
+        $this->success('批量删除成功!');
+    }
+    
+    //删除留言
+    public function delete(){
+        if(empty($_GET['id'])){
+            $this->error("参数错误!");
+        }
+        $id = $_GET['id'];
+        
+        $note = M("Note");
+        //先删除记录的图片
+        $info = $note->field("img_path,img_path_big,img_path_mid,img_path_sm")
+                     ->where([
+                                'id' => $id,
+                             ])
+                    ->find();
+        
+        if($info){
+            //如果查到记录就删除硬盘上的图片
+            unlink('./Public/Uploads/'.$info['img_path']);
+            unlink('./Public/Uploads/'.$info['img_path_big']);
+            unlink('./Public/Uploads/'.$info['img_path_mid']);
+            unlink('./Public/Uploads/'.$info['img_path_sm']);
+            
+            //在从数据库删除数据
+            $note->where([
+                            'id' => $id,
+                         ])
+                 ->delete();
+            
+            //提示信息并跳转到上一个页面
+            $this->success('删除成功!');
+        }
+        else {
+            $this->error("无此记录");
+        }
+        
+    }
+    
     //查看所有留言
     public function lst(){
         
@@ -86,13 +154,34 @@ class NoteController extends Controller{
         $upload->rootPath = './Public/Uploads/'; // 设置附件上传根目录 --> 需手动建立目录
         $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
         
-        //默认上传图片地址为空
-        $imgPath = '';
+        //要插入数据库的数据
+        $data = array(
+            'title' => $title,
+            'content' => $content,
+            'addtime' => date('Y-m-d H:i:s'),
+            'ip' => get_client_ip(1),
+        );
+        
         // 上传文件
         $imgInfo= $upload->upload();
         if($imgInfo) {
-            // 上传成功
+            // 上传成功  拼接图片地址路径
             $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
+            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
+            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
+            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
+            
+            /**********************根据上传图片生成3张缩略图************************/
+            $image= new \Think\Image();
+            $image->open($upload->rootPath . $imgPath);
+            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
+            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
+            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
+            
+            $data['img_path'] = $imgPath;
+            $data['img_path_big'] = $imgPath_big;
+            $data['img_path_mid'] = $imgPath_mid;
+            $data['img_path_sm'] = $imgPath_sm;
         }
         else{
             // 上传错误提示错误信息
@@ -104,16 +193,10 @@ class NoteController extends Controller{
         }
         //操作数据库
         $note = M('Note');
-        $data = array(
-            'title' => $title,
-            'content' => $content,
-            'addtime' => date('Y-m-d H:i:s'),
-            'img_path' => $imgPath,
-            'ip' => get_client_ip(1),
-        );
         $id = $note->add($data);
-        $this->success("添加成功:新添加记录的id为$id", '/index.php/Home/Note/lst');
         //提示成功或失败
+        $this->success("添加成功:新添加记录的id为$id", '/index.php/Home/Note/lst');
+        
     }
     
     
