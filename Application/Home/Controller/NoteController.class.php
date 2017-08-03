@@ -11,6 +11,110 @@ class NoteController extends Controller{
         $Verify->entry();
     }
     
+    //修改留言  --> 处理表单,修改数据库
+    public function doedit(){
+        
+        /********************接受*********************/
+        $id = trim($_POST['id']);
+        $title = trim($_POST['title']);
+        $content= trim($_POST['content']);
+        $captcha= trim($_POST['captcha']);
+        //验证数据        
+        if(empty($id)){
+            $this->error('参数错误');
+        }
+        $verify = new \Think\Verify();
+        if(!$verify->check($captcha)){
+            $this->error('验证码不正确');
+        }
+        
+        if(empty($title)){
+            $this->error('标题不能为空');
+        }
+        if(empty($content)){
+            $this->error('内容不能为空');
+        }
+        /********************上传图片*********************/
+        $upload = new \Think\Upload();
+        $upload->maxSize = 2*1024*1024 ;// 设置附件上传大小  单位:字节  2M
+        $upload->exts = array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
+        $upload->rootPath = './Public/Uploads/'; // 设置附件上传根目录 --> 需手动建立目录
+        $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
+        
+        //要插入数据库的数据
+        $data = array(
+            'title' => $title,
+            'content' => $content,
+            'addtime' => date('Y-m-d H:i:s'),
+            'ip' => get_client_ip(1),
+        );
+        
+        // 上传文件
+        $imgInfo= $upload->upload();
+        if($imgInfo) {
+            // 上传成功  拼接图片地址路径
+            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
+            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
+            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
+            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
+            
+            /**********************根据上传图片生成3张缩略图************************/
+            $image= new \Think\Image();
+            $image->open($upload->rootPath . $imgPath);
+            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
+            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
+            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
+            
+            $data['img_path'] = $imgPath;
+            $data['img_path_big'] = $imgPath_big;
+            $data['img_path_mid'] = $imgPath_mid;
+            $data['img_path_sm'] = $imgPath_sm;
+            
+            /*******************删除原图片**********************/            
+            unlink('./Public/Uploads/'.$_POST['img_path']);
+            unlink('./Public/Uploads/'.$_POST['img_path_big']);
+            unlink('./Public/Uploads/'.$_POST['img_path_mid']);
+            unlink('./Public/Uploads/'.$_POST['img_path_sm']);
+        }
+        else{
+            // 上传错误提示错误信息
+            $error = $upload->getError();
+            //可以不上传图片
+            if($error != "没有文件被上传！"){
+                $this->error($error);
+            }
+        }
+        //操作数据库
+        $note = M('Note');
+        $id = $note->where([
+                            'id' => $id,
+                           ])
+                   ->save($data);
+        //提示成功或失败
+        $this->success("修改成功!", '/index.php/Home/Note/lst');
+    }
+    
+    //修改留言  --> 显示修改留言的表单
+    public function edit(){
+        
+        /********************取数据********************/
+        if(empty($_GET['id'])){
+            $this->error("参数错误!");
+        }
+        $id = $_GET['id'];
+        
+        /*********************得到该记录的信息 并传到模版中***********************/
+        $note = M("Note");
+        $info = $note->where([
+                                'id' => $id,
+                            ])
+                     ->find();
+        $this->assign('info',$info);
+        
+        /*************************显示模版*******************************/
+        $this->display();
+    }
+    
     //批量删除留言
     public function pldelete(){
         

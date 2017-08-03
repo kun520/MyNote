@@ -3,59 +3,85 @@
 <head>
 	<title>留言列表</title>
 	<meta charset="utf-8">
-	<style type="text/css" >
-		.page{
-			margin:10px 0px;
-		}
-		.page a{
-			margin:10px;
-			padding:3px 6px;
-			border:1px solid red;
-			
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="/Public/bootstrap/css/bootstrap.min.css" />
+	<script type="text/javascript" src="/Public/bootstrap/js/jquery.js"></script>
+	<script type="text/javascript" src="/Public/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
 
-<h1>留言列表</h1>
-<h2><a href="/index.php/Home/Note/add">添加留言</a></h2>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">留言板</a>
+    </div>
 
-<form>
-标题:<input name="title" type="text" value="<{$Think.get.title}>" />
-时间从:<input name="start" type="text" value="<{$Think.get.start}>" />
-到:<input name="end" type="text" value="<{$Think.get.end}>" />
-<input type="submit" value="查询" />
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">留言列表 <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">xxx</a></li>
+        
+      </ul>
+      
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<div style="margin-top:60px;"></div>
+
+<div class="container-fluid">
+<form class="navbar-form navbar-left">
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder="标题" name="title" value="<{$Think.get.title}>" />
+    <input type="text" class="form-control" placeholder="时间开始" name="start" value="<{$Think.get.start}>" />
+    <input type="text" class="form-control" placeholder="时间结束" name="end" value="<{$Think.get.end}>" />
+  </div>
+  <button type="submit" class="btn btn-default">查询</button>
 </form>
+</div>
 
-<div class="page"><{$show}></div>
+<div class="container-fluid">
+	<div class="table-responsive">
+		<form method="POST" action="/Home/Note/pldelete">
+			<input onclick="return confirm('确认删除吗?');" type="submit" value="删除所选" class="btn btn-default" />
+			<a class="btn btn-default" href="/index.php/Home/Note/add">添加留言</a>
+			<table class="table table-bordered table-hover" border="1" width="100%">
+				<tr>
+					<th>选择</th>
+					<th>Id</th>
+					<th>图片</th>
+					<th>标题</th>
+					<th>内容</th>
+					<th>添加时间</th>
+					<th>ip</th>
+					<th>操作</th>
+				</tr>
+				<foreach name="data" item="lst">
+				 	<tr>
+				 		<td><input type="checkbox" name="selId[]" value="<{$lst.id}>" /></td>
+				 		<td><{$lst.id}></td>
+				 		<td><img src="/Public/Uploads/<{$lst.img_path_sm}>"></td>
+				 		<td><{$lst.title|htmlspecialchars}></td>
+				 		<td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
+				 		<td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td>
+				 		<td>
+				 			<a href="/Home/Note/edit/id/<{$lst.id}>">修改</a>
+				 			<a onclick="return confirm('确认删除吗?');" href="/Home/Note/delete/id/<{$lst.id}>">删除</a>				 		
+				 		</td>
+				 	</tr>
+				</foreach>
+			</table>
+		</form>
+	</div>
+</div>
 
-<form method="POST" action="/Home/Note/pldelete">
-	<table border="1" width="100%">
-		<tr>
-			<th>选择</th>
-			<th>Id</th>
-			<th>图片</th>
-			<th>标题</th>
-			<th>内容</th>
-			<th>添加时间</th>
-			<th>ip</th>
-			<th>操作</th>
-		</tr>
-		<foreach name="data" item="lst">
-		 	<tr>
-		 		<td><input type="checkbox" name="selId[]" value="<{$lst.id}>" /></td>
-		 		<td><{$lst.id}></td>
-		 		<td><img src="/Public/Uploads/<{$lst.img_path_mid}>"></td>
-		 		<td><{$lst.title|htmlspecialchars}></td>
-		 		<td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
-		 		<td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td>
-		 		<td><a onclick="return confirm('确认删除吗?');" href="/Home/Note/delete/id/<{$lst.id}>">删除</a></td>
-		 	</tr>
-		</foreach>
-	</table>
-	<input type="submit" value="删除所选" />
-</form>
-<div class="page"><{$show}></div>
+<div class="container-fluid"><{$show}></div>
 
 </body>
 </html>

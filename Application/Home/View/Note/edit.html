@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>修改留言</title>
+	<meta charset="utf-8">
+</head>
+<body>
+
+<h1>修改留言</h1>
+<h2><a href="/index.php/Home/Note/lst">留言列表</a></h2>
+
+<form enctype="multipart/form-data" action="/index.php/Home/Note/doedit" method="post">
+	<input type="hidden" name="id"  value="<{$info.id}>" />
+	<input type="hidden" name="img_path"  value="<{$info.img_path}>" />
+	<input type="hidden" name="img_path_sm"  value="<{$info.img_path_sm}>" />
+	<input type="hidden" name="img_path_mid"  value="<{$info.img_path_mid}>" />
+	<input type="hidden" name="img_path_big"  value="<{$info.img_path_big}>" />
+	<div>
+		图片:<input type="file" name="image" />
+		<br />
+		<img src="/Public/Uploads/<{$info.img_path_mid}>">
+	</div>
+	<div>
+		标题:<input size="60" type="text" name="title" value="<{$info.content}>" />
+	</div>
+	<div>
+		内容:<textarea name="content" rows="10" cols="60"><{$info.content}></textarea>		
+	</div>
+	<div>
+		验证码:<input type="text" name="captcha" />
+		<img style="cursor: pointer;" onclick="this.src='/Home/Note/captcha#'+Math.random();" src="/Home/Note/captcha">
+	</div>
+	<div>
+		<input type="submit" value="修改" />
+	</div>
+	
+</form>
+
+</body>
+</html>
