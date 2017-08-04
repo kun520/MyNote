@@ -13,85 +13,25 @@ class NoteController extends Controller{
     
     //修改留言  --> 处理表单,修改数据库
     public function doedit(){
-        
-        /********************接受*********************/
-        $id = trim($_POST['id']);
-        $title = trim($_POST['title']);
-        $content= trim($_POST['content']);
-        $captcha= trim($_POST['captcha']);
-        //验证数据        
-        if(empty($id)){
-            $this->error('参数错误');
-        }
-        $verify = new \Think\Verify();
-        if(!$verify->check($captcha)){
-            $this->error('验证码不正确');
-        }
-        
-        if(empty($title)){
-            $this->error('标题不能为空');
-        }
-        if(empty($content)){
-            $this->error('内容不能为空');
-        }
-        /********************上传图片*********************/
-        $upload = new \Think\Upload();
-        $upload->maxSize = 2*1024*1024 ;// 设置附件上传大小  单位:字节  2M
-        $upload->exts = array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
-        $upload->rootPath = './Public/Uploads/'; // 设置附件上传根目录 --> 需手动建立目录
-        $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
-        
-        //要插入数据库的数据
-        $data = array(
-            'title' => $title,
-            'content' => $content,
-            'addtime' => date('Y-m-d H:i:s'),
-            'ip' => get_client_ip(1),
-        );
-        
-        // 上传文件
-        $imgInfo= $upload->upload();
-        if($imgInfo) {
-            // 上传成功  拼接图片地址路径
-            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
-            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
-            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
-            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
-            
-            /**********************根据上传图片生成3张缩略图************************/
-            $image= new \Think\Image();
-            $image->open($upload->rootPath . $imgPath);
-            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
-            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
-            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
-            
-            $data['img_path'] = $imgPath;
-            $data['img_path_big'] = $imgPath_big;
-            $data['img_path_mid'] = $imgPath_mid;
-            $data['img_path_sm'] = $imgPath_sm;
-            
-            /*******************删除原图片**********************/            
-            unlink('./Public/Uploads/'.$_POST['img_path']);
-            unlink('./Public/Uploads/'.$_POST['img_path_big']);
-            unlink('./Public/Uploads/'.$_POST['img_path_mid']);
-            unlink('./Public/Uploads/'.$_POST['img_path_sm']);
-        }
-        else{
-            // 上传错误提示错误信息
-            $error = $upload->getError();
-            //可以不上传图片
-            if($error != "没有文件被上传！"){
-                $this->error($error);
+                
+        //实例化Note模型
+        $note = D('Note');
+        //接受数据并保存到实例中,并根据定义的验证规则验证数据
+        if($note->create()){
+            //验证成功,添加数据
+            $note->save();
+            if($note->getError()){                
+                //显示保存中失败信息
+                $this->error($note->getError());
+            }
+            else{
+                $this->success("修改成功!", U('lst'));                
             }
         }
-        //操作数据库
-        $note = M('Note');
-        $id = $note->where([
-                            'id' => $id,
-                           ])
-                   ->save($data);
-        //提示成功或失败
-        $this->success("修改成功!", '/index.php/Home/Note/lst');
+        else{
+            //显示验证失败信息
+            $this->error($note->getError());
+        }
     }
     
     //修改留言  --> 显示修改留言的表单
@@ -101,14 +41,10 @@ class NoteController extends Controller{
         if(empty($_GET['id'])){
             $this->error("参数错误!");
         }
-        $id = $_GET['id'];
         
         /*********************得到该记录的信息 并传到模版中***********************/
-        $note = M("Note");
-        $info = $note->where([
-                                'id' => $id,
-                            ])
-                     ->find();
+        $note = D("Note");
+        $info = $note->selone();
         $this->assign('info',$info);
         
         /*************************显示模版*******************************/
@@ -118,29 +54,8 @@ class NoteController extends Controller{
     //批量删除留言
     public function pldelete(){
         
-        $note = M("Note");
-        foreach ( $_POST['selId'] as $id){
-            //先删除记录的图片
-            $info = $note->field("img_path,img_path_big,img_path_mid,img_path_sm")
-            ->where([
-                'id' => $id,
-            ])
-            ->find();
-            
-            if($info){
-                //如果查到记录就删除硬盘上的图片
-                unlink('./Public/Uploads/'.$info['img_path']);
-                unlink('./Public/Uploads/'.$info['img_path_big']);
-                unlink('./Public/Uploads/'.$info['img_path_mid']);
-                unlink('./Public/Uploads/'.$info['img_path_sm']);
-                
-                //在从数据库删除数据
-                $note->where([
-                    'id' => $id,
-                ])
-                ->delete();
-            }
-        }
+        $note = D("Note");
+        $note->pldelete();
         //提示信息并跳转到上一个页面
         $this->success('批量删除成功!');
     }
@@ -150,29 +65,12 @@ class NoteController extends Controller{
         if(empty($_GET['id'])){
             $this->error("参数错误!");
         }
-        $id = $_GET['id'];
         
-        $note = M("Note");
+        $note = D("Note");
         //先删除记录的图片
-        $info = $note->field("img_path,img_path_big,img_path_mid,img_path_sm")
-                     ->where([
-                                'id' => $id,
-                             ])
-                    ->find();
+        $mess = $note->delete();
         
-        if($info){
-            //如果查到记录就删除硬盘上的图片
-            unlink('./Public/Uploads/'.$info['img_path']);
-            unlink('./Public/Uploads/'.$info['img_path_big']);
-            unlink('./Public/Uploads/'.$info['img_path_mid']);
-            unlink('./Public/Uploads/'.$info['img_path_sm']);
-            
-            //在从数据库删除数据
-            $note->where([
-                            'id' => $id,
-                         ])
-                 ->delete();
-            
+        if($mess){
             //提示信息并跳转到上一个页面
             $this->success('删除成功!');
         }
@@ -184,45 +82,18 @@ class NoteController extends Controller{
     
     //查看所有留言
     public function lst(){
-        
-        /***************搜索功能*******************/
-        $title = isset($_GET['title']) ? $_GET['title'] : '';
-        $start = isset($_GET['start']) ? $_GET['start'] : '';
-        $end= isset($_GET['end']) ? $_GET['end'] : '';
-        
-        $where = [];
-        if($title){
-            $where['title'] = ['LIKE',"%$title%"];
-        }
-        
-        if($start && $end){//如果2个时间都值就用BETWEEN AND
-            $where['addtime'] = ['BETWEEN', [$start,$end]];
-        }
-        else if($start){//>=开始时间
-            $where['addtime'] = ['EGT', $start];
-        }
-        else if($end){//<=结束始时间
-            $where['addtime'] = ['ELT', $end];
-        }        
-        
-        /***************翻页功能*******************/
+                
         //实例化一个表模型对象
-        $note = M('Note');
-        //取出表中该搜索条件的总记录数
-        $count = $note->where($where)->count();
-        $perPage = 10;
-        $page = new \Think\Page($count, $perPage);
+        $note = D('Note');
         
-        //生成翻页用的页面按钮
-        $show = $page->show();
-        $this->assign('show', $show);
-        
-        /***************查询数据*******************/
-        $data = $note->where($where)->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
+        //调用selwhere方法得到数据
+        $data = $note->selwhere();
         
         //把数据传到页面中
-        $this->assign('data', $data);
-                
+        foreach($data as $k=>$v){
+            $this->assign($k, $v);            
+        }
+        
         $this->display();
     }
     
@@ -234,72 +105,25 @@ class NoteController extends Controller{
     
     //添加留言 - 处理表单,插入数据
     public function doadd(){
-                
-        //接受提交的数据
-        $title = trim($_POST['title']);
-        $content= trim($_POST['content']);
-        $captcha= trim($_POST['captcha']);
-        //验证数据
-        $verify = new \Think\Verify(); 
-        if(!$verify->check($captcha)){            
-            $this->error('验证码不正确');
-        }
         
-        if(empty($title)){
-            $this->error('标题不能为空');
-        }
-        if(empty($content)){
-            $this->error('内容不能为空');
-        }
-        /********************上传图片*********************/
-        $upload = new \Think\Upload();
-        $upload->maxSize = 2*1024*1024 ;// 设置附件上传大小  单位:字节  2M
-        $upload->exts = array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
-        $upload->rootPath = './Public/Uploads/'; // 设置附件上传根目录 --> 需手动建立目录
-        $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
-        
-        //要插入数据库的数据
-        $data = array(
-            'title' => $title,
-            'content' => $content,
-            'addtime' => date('Y-m-d H:i:s'),
-            'ip' => get_client_ip(1),
-        );
-        
-        // 上传文件
-        $imgInfo= $upload->upload();
-        if($imgInfo) {
-            // 上传成功  拼接图片地址路径
-            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
-            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
-            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
-            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
-            
-            /**********************根据上传图片生成3张缩略图************************/
-            $image= new \Think\Image();
-            $image->open($upload->rootPath . $imgPath);
-            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
-            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
-            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
-            
-            $data['img_path'] = $imgPath;
-            $data['img_path_big'] = $imgPath_big;
-            $data['img_path_mid'] = $imgPath_mid;
-            $data['img_path_sm'] = $imgPath_sm;
-        }
-        else{
-            // 上传错误提示错误信息
-            $error = $upload->getError();
-            //可以不上传图片
-            if($error != "没有文件被上传！"){
-                $this->error($error);
+        //实例化Note模型
+        $note = D('Note');
+        //接受数据并保存到实例中,并根据定义的验证规则验证数据
+        if($note->create()){
+            //验证成功,添加数据
+            $id = $note->add();
+            if($note->getError()){
+                //显示插入中失败信息
+                $this->error($note->getError());
+            }
+            else{
+                $this->success("添加成功:新添加记录的id为$id", U('lst'));
             }
         }
-        //操作数据库
-        $note = M('Note');
-        $id = $note->add($data);
-        //提示成功或失败
-        $this->success("添加成功:新添加记录的id为$id", '/index.php/Home/Note/lst');
+        else{
+            //显示验证失败信息
+            $this->error($note->getError());
+        }
         
     }
     

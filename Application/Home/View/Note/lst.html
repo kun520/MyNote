@@ -48,9 +48,9 @@
 
 <div class="container-fluid">
 	<div class="table-responsive">
-		<form method="POST" action="/Home/Note/pldelete">
+		<form method="POST" action="<{:U('pldelete')}>">
 			<input onclick="return confirm('确认删除吗?');" type="submit" value="删除所选" class="btn btn-default" />
-			<a class="btn btn-default" href="/index.php/Home/Note/add">添加留言</a>
+			<a class="btn btn-default" href="<{:U('add')}>">添加留言</a>
 			<table class="table table-bordered table-hover" border="1" width="100%">
 				<tr>
 					<th>选择</th>
@@ -71,8 +71,8 @@
 				 		<td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
 				 		<td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td>
 				 		<td>
-				 			<a href="/Home/Note/edit/id/<{$lst.id}>">修改</a>
-				 			<a onclick="return confirm('确认删除吗?');" href="/Home/Note/delete/id/<{$lst.id}>">删除</a>				 		
+				 			<a href="<{:U('edit?id='.$lst['id'])}>">修改</a>
+				 			<a onclick="return confirm('确认删除吗?');" href="<{:U('delete?id='.$lst['id'])}>">删除</a>				 		
 				 		</td>
 				 	</tr>
 				</foreach>

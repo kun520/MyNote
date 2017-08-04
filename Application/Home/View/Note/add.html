@@ -7,9 +7,9 @@
 <body>
 
 <h1>添加留言</h1>
-<h2><a href="/index.php/Home/Note/lst">留言列表</a></h2>
+<h2><a href="<{:U('lst')}>">留言列表</a></h2>
 
-<form enctype="multipart/form-data" action="/index.php/Home/Note/doadd" method="post">
+<form enctype="multipart/form-data" action="<{:U('doadd')}>" method="post">
 	
 	<div>
 		图片:<input type="file" name="image" />
@@ -22,7 +22,7 @@
 	</div>
 	<div>
 		验证码:<input type="text" name="captcha" />
-		<img style="cursor: pointer;" onclick="this.src='/Home/Note/captcha#'+Math.random();" src="/Home/Note/captcha">
+		<img style="cursor: pointer;" onclick="this.src='<{:U('captcha')}>'+Math.random();" src="<{:U('captcha')}>">
 	</div>
 	<div>
 		<input type="submit" value="添加" />

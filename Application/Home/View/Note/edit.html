@@ -7,14 +7,14 @@
 <body>
 
 <h1>修改留言</h1>
-<h2><a href="/index.php/Home/Note/lst">留言列表</a></h2>
+<h2><a href="<{:U('lst')}>">留言列表</a></h2>
 
-<form enctype="multipart/form-data" action="/index.php/Home/Note/doedit" method="post">
+<form enctype="multipart/form-data" action="<{:U('doedit')}>" method="post">
 	<input type="hidden" name="id"  value="<{$info.id}>" />
-	<input type="hidden" name="img_path"  value="<{$info.img_path}>" />
-	<input type="hidden" name="img_path_sm"  value="<{$info.img_path_sm}>" />
-	<input type="hidden" name="img_path_mid"  value="<{$info.img_path_mid}>" />
-	<input type="hidden" name="img_path_big"  value="<{$info.img_path_big}>" />
+	<input type="hidden" name="img_path1"  value="<{$info.img_path}>" />
+	<input type="hidden" name="img_path_sm1"  value="<{$info.img_path_sm}>" />
+	<input type="hidden" name="img_path_mid1"  value="<{$info.img_path_mid}>" />
+	<input type="hidden" name="img_path_big1"  value="<{$info.img_path_big}>" />
 	<div>
 		图片:<input type="file" name="image" />
 		<br />
@@ -28,7 +28,7 @@
 	</div>
 	<div>
 		验证码:<input type="text" name="captcha" />
-		<img style="cursor: pointer;" onclick="this.src='/Home/Note/captcha#'+Math.random();" src="/Home/Note/captcha">
+		<img style="cursor: pointer;" onclick="this.src='<{:U('captcha')}>#'+Math.random();" src="<{:U('captcha')}>">
 	</div>
 	<div>
 		<input type="submit" value="修改" />
