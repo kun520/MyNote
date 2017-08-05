@@ -54,7 +54,11 @@ class NoteController extends Controller{
     //批量删除留言
     public function pldelete(){
         
-        $note = D("Note");
+        $note = D("Note"); 
+        // 手动进行令牌验证
+        if (!$note->autoCheckToken($_POST)){
+            exit('error!');
+        }
         $note->pldelete();
         //提示信息并跳转到上一个页面
         $this->success('批量删除成功!');
