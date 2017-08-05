@@ -224,9 +224,7 @@ class NoteModel extends RelationModel{
         
         /***************查询一页的留言数据*******************/
         $info['data']= $this->relation(true)->where($where)->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
-        echo "<pre>";
-        var_dump($info['data']);
-        echo "</pre>";
+        
         return $info;
     }
 }
