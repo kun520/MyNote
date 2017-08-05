@@ -4,12 +4,15 @@
 	<title>留言列表</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="/Public/bootstrap/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="/Public/datepicker/datepicker.min.css" />
 	<script type="text/javascript" src="/Public/bootstrap/js/jquery.js"></script>
 	<script type="text/javascript" src="/Public/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/Public/datepicker/datepicker.min.js"></script>
+	<script type="text/javascript" src="/Public/datepicker/zh-CN.js"></script>
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top">
+<nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
@@ -36,13 +39,22 @@
 <div style="margin-top:60px;"></div>
 
 <div class="container-fluid">
-<form class="navbar-form navbar-left">
-  <div class="form-group">
-    <input type="text" class="form-control" placeholder="标题" name="title" value="<{$Think.get.title}>" />
-    <input type="text" class="form-control" placeholder="时间开始" name="start" value="<{$Think.get.start}>" />
-    <input type="text" class="form-control" placeholder="时间结束" name="end" value="<{$Think.get.end}>" />
-  </div>
-  <button type="submit" class="btn btn-default">查询</button>
+<form role="form" class="form-inline">
+	<div class="form-group">
+	  	标题<input type="text" class="form-control" name="title" value="<{$Think.get.title}>" />    
+	</div>时间
+	<div class="input-group date form_datetime">
+	  	<input size="18" class="form-control" type="text" value="<{$Think.get.start}>" name="start" readonly>
+		<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+	</div>-
+	<div class="input-group date form_datetime">
+	   	<input size="18" class="form-control" type="text" value="<{$Think.get.end}>" name="end" readonly>
+		<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+	</div>
+	
+	<div class="form-group">
+		<input type="submit" class="btn btn-default" value="查询" />
+	</div>
 </form>
 </div>
 
@@ -89,3 +101,16 @@
 
 </body>
 </html>
+<script type="text/javascript">
+    $(".form_datetime").datetimepicker({
+
+			language: 'zh-CN',//显示中文
+			format: 'yyyy-mm-dd hh:ii:ss',//显示格式
+			//minView: "month",//设置只显示到月份
+			//initialDate: new Date(),//初始化当前日期
+			autoclose: true,//选中自动关闭
+			todayBtn: true,//显示今日按钮
+			forceParse: false//强制解析
+    		
+    	});
+</script>            
