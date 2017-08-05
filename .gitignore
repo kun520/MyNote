@@ -1,3 +1,4 @@
-Application/Runtime/
-Public/Uploads/
-ueditor/
+/Application/Runtime/
+/Public/Uploads/
+/ueditor/
+/.gitignore
