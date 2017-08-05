@@ -12,9 +12,6 @@
 <form enctype="multipart/form-data" action="<{:U('doadd')}>" method="post">
 	
 	<div>
-		图片:<input type="file" name="image" />
-	</div>
-	<div>
 		标题:<input size="60" type="text" name="title" />
 	</div>
 	<div>
@@ -23,6 +20,13 @@
 	<div>
 		验证码:<input type="text" name="captcha" />
 		<img style="cursor: pointer;" onclick="this.src='<{:U('captcha')}>'+Math.random();" src="<{:U('captcha')}>">
+	</div>
+	<hr/>
+	<div>
+		图片:<input type="button" id='add_img' value='添加图片' />
+		<ul id='img_list'>
+			<li><input size="60" type="file" name="image[]" /></li>
+		</ul>
 	</div>
 	<div>
 		<input type="submit" value="添加" />
@@ -33,3 +37,11 @@
 
 </body>
 </html>
+
+
+<script type="text/javascript" src="/Public/bootstrap/js/jquery.js"></script>
+<script type="text/javascript">
+	$("#add_img").click(function(){
+		$("#img_list").append("<li><input type='file' name='image[]' /></li>");
+	});
+</script>

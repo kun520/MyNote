@@ -6,13 +6,20 @@ create table s_note(
 	title varchar(100) not null comment '标题',
 	content longtext not null comment '内容',
 	addtime datetime not null /*default current_timestamp*/ comment '添加时间',
-	img_path varchar(100) comment '图片地址',
-	img_path_big varchar(100) comment '大缩略图片地址',
-	img_path_mid varchar(100) comment '中缩略图片地址',
-	img_path_sm varchar(100) comment '小缩略图片地址',
 	ip int not null comment 'Ip地址',
 	primary key(id)
 )engine=InnoDB default charset utf8 comment '留言表';
+
+
+create table s_note_image(
+	id mediumint unsigned not null auto_increment comment 'Id',
+	note_id mediumint unsigned not null comment '该图片所属的留言Id',
+	image varchar(100) comment '图片地址',
+	big_image varchar(100) comment '大缩略图片地址',
+	mid_image varchar(100) comment '中缩略图片地址',
+	sm_image varchar(100) comment '小缩略图片地址',
+	primary key(id)
+)engine=InnoDB default charset utf8 comment '留言图片表';
 
 /*
 存IP的知识点

@@ -1,9 +1,20 @@
 <?php
 namespace Home\Model;
-use Think\Model;
+use Think\Model\RelationModel;
 
-class NoteModel extends Model{
+class NoteModel extends RelationModel{
+    //关联note_image表
+    protected $_link = array(        
+        'NoteImage'=>array(
+            'mapping_type'   => self::HAS_MANY,
+            'class_name'     => 'NoteImage',    
+            'foreign_key'    => 'note_id',
+            'mapping_name'   => 'images',
+            'mapping_fields' => 'sm_image',
+        ),
+    );
     
+    //验证
     protected $_validate = array(
         array('title','require','标题不能为空',1),
         array('content','require','内容不能为空',1),
@@ -64,6 +75,13 @@ class NoteModel extends Model{
     
     //添加
     public function add(){
+        
+        //调用父类的add方法插入数据得到id
+        //赋值一些其他的字段
+        $this->addtime= date('Y-m-d H:i:s');
+        $this->ip = get_client_ip(1);
+        $noteId = parent::add();
+        
         /********************上传图片*********************/
         $upload = new \Think\Upload();
         $upload->maxSize = 2*1024*1024 ;// 设置附件上传大小  单位:字节  2M
@@ -72,41 +90,38 @@ class NoteModel extends Model{
         $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
                 
         // 上传文件
-        $imgInfo= $upload->upload();
-        if($imgInfo) {
-            // 上传成功  拼接图片地址路径
-            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
-            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
-            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
-            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
-            
-            /**********************根据上传图片生成3张缩略图************************/
-            $image= new \Think\Image();
-            $image->open($upload->rootPath . $imgPath);
-            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
-            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
-            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
-            //把图片的路径存入该实例的属性里(新建的)
-            $this->img_path = $imgPath;
-            $this->img_path_big = $imgPath_big;
-            $this->img_path_mid = $imgPath_mid;
-            $this->img_path_sm = $imgPath_sm;
-        }
-        else{
-            // 上传错误提示错误信息
-            $error = $upload->getError();
-            //可以不上传图片
-            if($error != "没有文件被上传！"){
-                $this->error = $error;
-                return;
-            }
-        }
-        //赋值一些其他的字段
-        $this->addtime= date('Y-m-d H:i:s');
-        $this->ip = get_client_ip(1);
+        $info= $upload->upload();
         
-        //调用父类的add方法插入数据
-        return parent::add();
+        if($info) {
+            //实例化图片类
+            $imgObj= new \Think\Image();
+            //实例化note_image表模型
+//             $niModel = M('note_image');
+            $niModel = M('NoteImage');
+            foreach ($info as $v){              
+                // 上传成功  拼接图片地址路径
+                $image = $v["savepath"] . $v["savename"];
+                $bigIimage= $v["savepath"] . 'big_' . $v["savename"];
+                $midImage= $v["savepath"] . 'mid_'. $v["savename"];
+                $smImage= $v["savepath"] . 'sm_'. $v["savename"];
+                
+                /**********************根据上传图片生成3张缩略图************************/
+                $imgObj->open($upload->rootPath . $image);
+                $imgObj->thumb(500, 500)->save($upload->rootPath . $bigIimage);
+                $imgObj->thumb(300, 300)->save($upload->rootPath . $midImage);
+                $imgObj->thumb(100, 100)->save($upload->rootPath . $smImage);
+                /***********************把这个图片保存到note_image表********************/
+                $niModel->add(array(
+                    'note_id' => $noteId,
+                    'image' => $image,
+                    'big_image' => $bigIimage,
+                    'mid_image' => $midImage,
+                    'sm_image' => $smImage,
+                    ));
+            }
+        }        
+        
+        return $noteId;
     }
     
     //删除一条数据
@@ -207,8 +222,11 @@ class NoteModel extends Model{
         $show = $page->show();
         $info['show'] = $show;
         
-        /***************查询数据*******************/
-        $info['data']= $this->where($where)->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
+        /***************查询一页的留言数据*******************/
+        $info['data']= $this->relation(true)->where($where)->order('id DESC')->limit($page->firstRow, $page->listRows)->select();
+        echo "<pre>";
+        var_dump($info['data']);
+        echo "</pre>";
         return $info;
     }
 }
