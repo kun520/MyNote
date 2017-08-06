@@ -11,6 +11,20 @@ class NoteController extends Controller{
         $Verify->entry();
     }
     
+    //修改note页面删除图片
+    public function deleteImg(){
+        $id = (int)I('post.id');
+        $niObj = M('NoteImage');
+        //查询NoteImage表的该记录的4个图片地址
+        $info = $niObj->where(array('id' => $id))->find();
+        unlink("./Public/Uploads/".$info['image']);
+        unlink("./Public/Uploads/".$info['big_image']);
+        unlink("./Public/Uploads/".$info['mid_image']);
+        unlink("./Public/Uploads/".$info['sm_image']);
+        //产出NoteImage表的该记录
+        $niObj->where(array('id' => $id))->delete();        
+    }
+    
     //修改留言  --> 处理表单,修改数据库
     public function doedit(){
                 
@@ -46,7 +60,6 @@ class NoteController extends Controller{
         $note = D("Note");
         $info = $note->selone();
         $this->assign('info',$info);
-        
         /*************************显示模版*******************************/
         $this->display();
     }
@@ -115,6 +128,7 @@ class NoteController extends Controller{
         //接受数据并保存到实例中,并根据定义的验证规则验证数据
         if($note->create()){
             //验证成功,添加数据
+            
             $id = $note->add();
             if($note->getError()){
                 //显示插入中失败信息

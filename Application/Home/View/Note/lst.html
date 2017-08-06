@@ -80,11 +80,11 @@
 				 		<td><{$lst.id}></td>
 				 		<td>				 			
 							<foreach name="lst.images" item="img">
-				 				<img src="/Public/Uploads/<{$img.sm_image}>">
+				 				<img src="/Public/Uploads/<{$img.mid_image}>">
 							</foreach>
 				 		</td>
-				 		<td><{$lst.title|htmlspecialchars}></td>
-				 		<td><{$lst.content|mb_substr=0,70,'utf8'|htmlspecialchars}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
+				 		<td><{$lst.title}></td>
+				 		<td><{$lst.content}><gt name="lst.content|mb_strlen='utf8'" value="70">...</gt></td>
 				 		<td><{$lst.addtime}></td><td><{$lst.ip|long2ip}></td>
 				 		<td>
 				 			<a href="<{:U('edit?id='.$lst['id'])}>">修改</a>

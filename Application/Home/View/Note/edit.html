@@ -4,6 +4,25 @@
 	<title>修改留言</title>
 	<meta charset="utf-8">
 </head>
+
+<link rel="stylesheet" type="text/css" href="/Public/bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="/Public/bootstrap/js/jquery.js"></script>
+<script type="text/javascript" src="/Public/bootstrap/js/bootstrap.min.js"></script>
+<style>
+	.list-group-item{
+		display:inline-block;
+		border:0px;
+	}
+	.list-group-item img{
+		width:220px;
+	}
+	.list-group-item a{
+		position: absolute;
+		top: 15px;
+		right: 20px;
+		
+	}	
+</style>
 <body>
 
 <h1>修改留言</h1>
@@ -11,24 +30,30 @@
 
 <form enctype="multipart/form-data" action="<{:U('doedit')}>" method="post">
 	<input type="hidden" name="id"  value="<{$info.id}>" />
-	<input type="hidden" name="img_path1"  value="<{$info.img_path}>" />
-	<input type="hidden" name="img_path_sm1"  value="<{$info.img_path_sm}>" />
-	<input type="hidden" name="img_path_mid1"  value="<{$info.img_path_mid}>" />
-	<input type="hidden" name="img_path_big1"  value="<{$info.img_path_big}>" />
 	<div>
-		图片:<input type="file" name="image" />
-		<br />
-		<img src="/Public/Uploads/<{$info.img_path_mid}>">
+		标题:<input size="60" type="text" name="title" value="<{$info.title}>" />
 	</div>
 	<div>
-		标题:<input size="60" type="text" name="title" value="<{$info.content}>" />
-	</div>
-	<div>
-		内容:<textarea name="content" rows="10" cols="60"><{$info.content}></textarea>		
+		内容:<textarea name="content" id="content"><{$info.content}></textarea>		
 	</div>
 	<div>
 		验证码:<input type="text" name="captcha" />
 		<img style="cursor: pointer;" onclick="this.src='<{:U('captcha')}>#'+Math.random();" src="<{:U('captcha')}>">
+	</div>
+	<hr/>
+	<div>
+		图片:<input type="button" id='add_img' value='添加图片' />
+		<ul id='img_list'>
+			<li><input type="file" name="image[]" /></li>
+		</ul>
+		<ul class="list-group">
+			<foreach name="info.images" item="img">
+ 				<li class="list-group-item">
+	 				<img class="img-thumbnail" src="/Public/Uploads/<{$img.mid_image}>" />
+	 				<a class="btn btn-danger deleteImg" imgID="<{$img['id']}>">X</a>
+ 				</li>
+			</foreach>
+		</ul>
 	</div>
 	<div>
 		<input type="submit" value="修改" />
@@ -38,3 +63,36 @@
 
 </body>
 </html>
+
+
+<script type="text/javascript" src="/Public/bootstrap/js/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="/Public/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="/Public/ueditor/ueditor.all.min.js"> </script>
+<!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+<!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+<script type="text/javascript" charset="utf-8" src="/Public/ueditor/lang/zh-cn/zh-cn.js"></script>
+   
+<script type="text/javascript">
+	var um = UE.getEditor('content');
+	
+	$("#add_img").click(function(){
+		$("#img_list").append("<li><input type='file' name='image[]' /></li>");
+	});
+	
+	$(".deleteImg").click(function(){
+		if(confirm('确认删除该图片吗?')){
+		
+			var id = $(this).attr("imgID");
+			var li = $(this).parent();
+			
+			$.ajax({
+				type : 'POST',
+				url : "<{:U('deleteImg')}>",
+				data : {"id" : id},
+				success : function(data){
+					li.remove();
+				}
+			});
+		}
+	});
+</script>

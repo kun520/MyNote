@@ -10,7 +10,7 @@ class NoteModel extends RelationModel{
             'class_name'     => 'NoteImage',    
             'foreign_key'    => 'note_id',
             'mapping_name'   => 'images',
-            'mapping_fields' => 'sm_image',
+            'mapping_fields' => 'id,mid_image',
         ),
     );
     
@@ -21,8 +21,15 @@ class NoteModel extends RelationModel{
         //array('captcha','require','验证码错误',1,'confirm'),
     );
     
+    
     //修改
     public function save(){
+        
+        //调用父类的add方法插入数据得到id
+        //赋值一些其他的字段        
+        $this->content = removeXSS($_POST['content']);
+        $this->ip = get_client_ip(1);
+        $noteId = parent::save();
         
         /********************上传图片*********************/
         $upload = new \Think\Upload();
@@ -32,52 +39,44 @@ class NoteModel extends RelationModel{
         $upload->savePath = 'Note/'; // 设置附件上传（子）目录 --> 程序自动建立
                 
         // 上传文件
-        $imgInfo= $upload->upload();
-        if($imgInfo) {
-            // 上传成功  拼接图片地址路径
-            $imgPath = $imgInfo["image"]["savepath"] . $imgInfo["image"]["savename"];
-            $imgPath_big = $imgInfo["image"]["savepath"] . 'big_' . $imgInfo["image"]["savename"];
-            $imgPath_mid = $imgInfo["image"]["savepath"] . 'mid_'. $imgInfo["image"]["savename"];
-            $imgPath_sm = $imgInfo["image"]["savepath"] . 'sm_'. $imgInfo["image"]["savename"];
-            
-            /**********************根据上传图片生成3张缩略图************************/
-            $image= new \Think\Image();
-            $image->open($upload->rootPath . $imgPath);
-            $image->thumb(500, 500)->save($upload->rootPath . $imgPath_big);
-            $image->thumb(300, 300)->save($upload->rootPath . $imgPath_mid);
-            $image->thumb(100, 100)->save($upload->rootPath . $imgPath_sm);
-            
-            $this->img_path = $imgPath;
-            $this->img_path_big = $imgPath_big;
-            $this->img_path_mid = $imgPath_mid;
-            $this->img_path_sm = $imgPath_sm;
-            /*******************删除原图片**********************/
-            unlink('./Public/Uploads/'.$this->img_path1);
-            unlink('./Public/Uploads/'.$this->img_path_big1);
-            unlink('./Public/Uploads/'.$this->img_path_mid1);
-            unlink('./Public/Uploads/'.$this->img_path_sm1);
-        }
-        else{
-            // 上传错误提示错误信息
-            $error = $upload->getError();
-            //可以不上传图片,其他的错误就抛出异常
-            if($error != "没有文件被上传！"){
-                $this->error = $error;
-                return;
+        $info= $upload->upload();
+        
+        if($info) {
+            $noteId = I('post.id');
+            //实例化图片类
+            $imgObj= new \Think\Image();
+            //实例化note_image表模型
+//             $niModel = M('note_image');
+            $niModel = M('NoteImage');
+            foreach ($info as $v){              
+                // 上传成功  拼接图片地址路径
+                $image = $v["savepath"] . $v["savename"];
+                $bigIimage= $v["savepath"] . 'big_' . $v["savename"];
+                $midImage= $v["savepath"] . 'mid_'. $v["savename"];
+                $smImage= $v["savepath"] . 'sm_'. $v["savename"];
+                
+                /**********************根据上传图片生成3张缩略图************************/
+                $imgObj->open($upload->rootPath . $image);
+                $imgObj->thumb(500, 500)->save($upload->rootPath . $bigIimage);
+                $imgObj->thumb(300, 300)->save($upload->rootPath . $midImage);
+                $imgObj->thumb(100, 100)->save($upload->rootPath . $smImage);
+                /***********************把这个图片保存到note_image表********************/
+                $niModel->add(array(
+                    'note_id' => $noteId,
+                    'image' => $image,
+                    'big_image' => $bigIimage,
+                    'mid_image' => $midImage,
+                    'sm_image' => $smImage,
+                    ));
             }
-        }
-        
-        //赋值一些其他的字段
-        $this->ip = get_client_ip(1);
-        
-        return parent::save();
+        }        
     }
     
     //添加
     public function add(){
-        
         //调用父类的add方法插入数据得到id
-        //赋值一些其他的字段
+        //赋值一些其他的字段        
+        $this->content = removeXSS($_POST['content']);        
         $this->addtime= date('Y-m-d H:i:s');
         $this->ip = get_client_ip(1);
         $noteId = parent::add();
@@ -183,7 +182,7 @@ class NoteModel extends RelationModel{
     
     //查找一条数据
     public function selone(){
-        return $this->where([
+        return $this->relation(true)->where([
                                 'id' =>I('get.id'),
                             ])
                             ->find();
