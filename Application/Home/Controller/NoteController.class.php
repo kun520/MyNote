@@ -79,21 +79,14 @@ class NoteController extends Controller{
     
     //删除留言
     public function delete(){
-        if(empty($_GET['id'])){
-            $this->error("参数错误!");
-        }
+        $id = (int)$_GET["id"];
         
         $note = D("Note");
         //先删除记录的图片
-        $mess = $note->delete();
+        $mess = $note->delNoteAndImg($id);
         
-        if($mess){
-            //提示信息并跳转到上一个页面
-            $this->success('删除成功!');
-        }
-        else {
-            $this->error("无此记录");
-        }
+        //提示信息并跳转到上一个页面
+        $this->success('删除成功!');
         
     }
     

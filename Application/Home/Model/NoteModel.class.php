@@ -123,60 +123,32 @@ class NoteModel extends RelationModel{
         return $noteId;
     }
     
-    //删除一条数据
-    public function delete(){
-        
-        $id = I('get.id');
-        
-        //查询该记录,取一些信息
-        $info = $this->field("img_path,img_path_big,img_path_mid,img_path_sm")
-                    ->where([
+    //根据留言id删除留言和该留言的图片
+    public function delNoteAndImg($id){
+        //先删除该条留言
+        $this->where([
                         'id' => $id,
                     ])
-                    ->find();
-                        
-        if($info){
-            //如果查到记录就删除硬盘上的图片
-            unlink('./Public/Uploads/'.$info['img_path']);
-            unlink('./Public/Uploads/'.$info['img_path_big']);
-            unlink('./Public/Uploads/'.$info['img_path_mid']);
-            unlink('./Public/Uploads/'.$info['img_path_sm']);
-            
-            //在从数据库删除数据
-            $this->where([
-                            'id' => $id,
-                        ]);
-            return parent::delete();
+            ->delete();
+        //再查询NoteImage表
+        $niModel = M("NoteImage");
+        $image = $niModel->where(array('note_id'=>$id))->select();
+        //删除硬盘上对应的图片
+        foreach ($image as $v){            
+            unlink('./Public/Uploads/'.$v['image']);
+            unlink('./Public/Uploads/'.$v['big_image']);
+            unlink('./Public/Uploads/'.$v['mid_image']);
+            unlink('./Public/Uploads/'.$v['sm_image']);
         }
-        else {
-            //返回-1代表数据库没这个记录
-            return -1;
-        }
+        //删除NoteImage表对应记录
+        $niModel->where(array('note_id'=>$id))->delete();
     }
-    
+        
     //删除多条记录
     public function pldelete(){
         foreach (I('post.selId') as $id){
-            //先删除记录的图片
-            $info = $this->field("img_path,img_path_big,img_path_mid,img_path_sm")
-                        ->where([
-                                    'id' => $id,
-                                ])
-                        ->find();
-            
-            if($info){
-                //如果查到记录就删除硬盘上的图片
-                unlink('./Public/Uploads/'.$info['img_path']);
-                unlink('./Public/Uploads/'.$info['img_path_big']);
-                unlink('./Public/Uploads/'.$info['img_path_mid']);
-                unlink('./Public/Uploads/'.$info['img_path_sm']);
-                
-                //在从数据库删除数据
-                $this->where([
-                    'id' => $id,
-                ]);
-                parent::delete();
-            }
+            $id = (int)$id;
+            $this->delNoteAndImg($id);
         }
     }
     
