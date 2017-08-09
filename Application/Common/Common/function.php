@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * 使用HTMLPurifier类处理字符串里包含的危险标签 防止XSS攻击
+ * @param string $data
+ * @return string
+ */
 function removeXSS($data){
     //引入这个类
     require_once './htmlpurifier/HTMLPurifier.auto.php';
@@ -16,4 +21,26 @@ function removeXSS($data){
     $_clean_xss_obj = new \HTMLPurifier($_clean_xss_config);
     //执行过滤
     return $_clean_xss_obj->purify($data);
+}
+
+/**
+ * 把传入$data的数据按无限级分类来排序
+ * @param array $data 要处理的数据
+ * @param int $pid 父分类id
+ * @param int $step id所处的级数
+ * @return array
+ */
+function recursiveCategoryData($data,$pid=0,$step=0){
+    global  $res;
+    foreach($data as $v){
+        if($pid == $v['parent_id']){
+            if($step > 0)
+                $flg = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',$step-1) . str_repeat('└―',1);
+            $v['cate_name'] = $flg.$v['cate_name'];
+            $res[] = $v;
+            recursiveCategoryData($data,$v['id'],$step+1);
+        }
+    }
+    
+    return $res;
 }

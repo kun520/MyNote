@@ -32,3 +32,13 @@ ip int      --> 2434234325
 	如何转: ip2long --> ip转数字
 		   long2ip --> 数字转ip
 */
+
+
+
+
+create table s_category(
+	id mediumint unsigned not null auto_increment comment 'Id',
+	cate_name varchar(32) comment '分类名称',
+	parent_id mediumint unsigned not null default '0' comment '所属上级分类id',
+	primary key(id)
+)engine=InnoDB default charset utf8 comment '分类表';

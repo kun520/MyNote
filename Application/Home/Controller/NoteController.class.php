@@ -2,7 +2,6 @@
 
 namespace Home\Controller;
 use Think\Controller;
-use Think\Upload;
 
 class NoteController extends Controller{
     //生成验证码
